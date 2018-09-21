@@ -63,7 +63,7 @@ def match_expectation(size_dist):
         return None
 
 
-def max_likelyhood(size_dist):
+def max_likelihood(size_dist):
     #result = minimize(lambda x: -likelyhood(x, size_dist), (0, 1), jac=lambda x: likelyhood_jacobian(x, size_dist), bounds=Bounds([-np.inf, 0], [np.inf, np.inf]))
     result = minimize(lambda x: -likelyhood(x, size_dist), (0, 1), jac=lambda x: -likelyhood_jacobian(x, size_dist), bounds=Bounds([-np.inf, 0], [np.inf, np.inf]))
     #result = minimize(lambda x: -likelyhood(x, size_dist), (0, 1), bounds=Bounds([-np.inf, 0], [np.inf, np.inf]))
