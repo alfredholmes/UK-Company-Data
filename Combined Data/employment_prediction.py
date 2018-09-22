@@ -1,5 +1,5 @@
 import sys
-import ijson, csv
+import ijson, csv, json
 
 from scipy.stats import lognorm
 
@@ -15,7 +15,7 @@ def main():
 	companies = get_companies()
 
 	print('sorting companies')
-	companies = order_companies(companies, 2014)
+	companies = sort_companies(companies, 2014)
 	print('done')
 
 	#parameters calculated for national size dist as in lognormal parameter fitting
@@ -29,7 +29,7 @@ def main():
 	with open('2014_sizes.csv', 'w') as csvfile:
 		writer = csv.writer(csvfile)
 		for i in range(len(companies)):
-			writer.writerow([companies[i], sizes[i]])
+			writer.writerow([companies[i].company_number, sizes[i]])
 
 
 def get_companies():
@@ -39,19 +39,17 @@ def get_companies():
 	with open('combined_data.json', 'r') as file:
 		for c in ijson.items(file, 'item'):
 			if i % 10000 == 0:
-				print(i)
-				if i > 90000:
-					break
+				print('\t', i)
 			i += 1
 			if 'death_date' not in c:
 				companies.append(Company(c['company_number'], c['birth_date'], c['address'], c['status'], c['sic_codes'], c['accounts']))
 			else:
 				companies.append(Company(c['company_number'], c['birth_date'], c['address'], c['status'], c['sic_codes'], c['accounts'], c['death_date']))
-	print('done')
+	print('\t done')
 	return companies
 
 
-def order_companies(companies, year):
+def sort_companies(companies, year):
 	""" Sorts array of companies, by assets
 	
 	Arguments:
@@ -65,29 +63,12 @@ def order_companies(companies, year):
 	"""
 	year = str(year)
 	#build company dict
-	sizes = {}
-	for company in companies:
-		if 'assets' not in company.accounts:
-			continue
-		if not company.alive_in_year(year):
-			continue
-		for date, size in company.accounts['assets'].items():
-			if year in date:
-				sizes[company.company_number] = size
-				break
-		else:
-			sizes[company.company_number] = 0
+	print('\t' + 'Filtering companies')
+	companies = [c for c in companies if c.alive_in_year(2014)]
+	print('\t' + 'done')
+	print('\t' + 'sorting return')
+	return sorted(companies, key=lambda c: c.get_account_size(2014))	
 
-	sorted_sizes = sorted(sizes.values())
-
-	#generate sorted list of company ids
-
-	sorted_ids = []
-
-	for size in sorted_sizes:
-		sorted_ids += [c for c, s in sizes.items() if s == size]
-
-	return sorted_ids
 	
 
 
