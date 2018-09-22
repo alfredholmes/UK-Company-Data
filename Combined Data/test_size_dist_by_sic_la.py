@@ -3,7 +3,6 @@ import csv, ijson, numpy as np
 import employment_prediction
 
 def main():
-	las = get_postcode_data()
 	companies = employment_prediction.get_companies()
 	sizes = get_company_sizes()
 
@@ -18,10 +17,11 @@ def main():
 		if company.company_number not in sizes:
 			continue
 
-		la = las[company.postcode(2014)]
+		la = company.la(2014)
+		print(la)
 		#sic = company.sic_codes
 		if la not in size_by_la:
-			size_by_la[la] = {s: 0 for s in size_band}
+			size_by_la[la] = {s: 0 for s in size_bands}
 
 		for i, s in enumerate(size_upper):
 			if sizes[company.company_number] < s:
@@ -42,25 +42,12 @@ def main():
 
 
 
-
-
-
-
-def get_postcode_data():
-	las = {}
-	with open('../data/postcode_la.csv', 'r') as csvfile:
-		reader = csv.reader(csvfile)
-		for line in reader:
-			las[line[0]] = line[1]
-
-	return las
-
 def get_company_sizes():
 	sizes = {}
 	with open('2014_sizes.csv', 'r') as csvfile:
 		reader = csv.reader(csvfile)
 		for line in reader:
-			sizes[line[0]] = line[1]
+			sizes[line[0]] = int(round(float(line[1])))
 	return sizes
 
 if __name__ == '__main__':
