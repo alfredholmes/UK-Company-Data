@@ -48,17 +48,41 @@
    \section{The Log Normal Hypothesis}
    To make the ONS data usable some sort of size distribution needs to be assumed. Using Maximum Likelihood Estimation (MLE) and the size bins, it is possible to fit distributions to the data. This has two benefits in that it assigns the mass of the probability distribution in a band in a sensible way and also removes the irritating \emph{250+} size band.
    \subsection{MLE and it's Bias}
+  
+
+   \begin{figure}
+      \caption{Mean Bias Plane}
+      \includegraphics[width=\textwidth]{mean_bias_close}
+      \label{fig:bias}
+   \end{figure} 
+
    Assuming a log normal distribution where the size X of a company is such that $\log X \sim \mathcal{N}(\mu, \sigma^2)$, $\mu$ and $\sigma$ can be calculated by maximising the log likelihood, given by
    \begin{equation}
    l(\mu, \sigma) = \sum_i n_i \log \left( \Phi \left( \frac{\log a_{i + 1} - \mu}{\sigma} \right) - \Phi \left( \frac{\log a_{i} - \mu}{\sigma} \right) \right)
    \end{equation}
    since $\mathbb{P}(a_i < X < a_{i + 1}) = \mathbb{P}(\log a_i < \log X < \log a_{i + 1}) = \Phi \left( \frac{\log a_{i + 1} - \mu}{\sigma} \right) - \Phi \left( \frac{\log a_{i} - \mu}{\sigma} \right)$. \\
-   Typically when dealing with bias from maximum likelihood estimates the bias depends on the number of observations in the sample and perhaps the values of the parameters themselves. Since the ONS data is binned and the sample size is large for each local authority, we assume that the sample proportions for each size band are the actual proportions for the distribution, to remove the dependence of the bias on the number of companies in the local authority. This can be justified by running simulations. We can then run simulations to examine the effects of the distribution parameters on the difference between the expected value of the MLE and the actual parameters.  
+   Typically when dealing with bias from maximum likelihood estimates the bias depends on the number of observations in the sample and perhaps the values of the parameters themselves. Since the ONS data is binned and the sample size is large for each local authority, we assume that the sample proportions for each size band are the actual proportions for the distribution, to remove the dependence of the bias on the number of companies in the local authority. This can be justified by running simulations. We can then run simulations to examine the effects of the distribution parameters on the difference between the expected value of the MLE and the actual parameters. In doing so we find that for the region parameter space that we are interested in the bias forms a plane (see figure \ref{fig:bias}). The spikes in the bias are most likely formed by a poor match for the generated numbers and the size bands used in the ONS companies house report - so for example the whole sample is in one band.
+   \\After simulating the parameter estimation, it is possible to fit parameters $(a, b, c)$ for $\mu$ and $\sigma$ to the observed bias plane such that, if $\hat{\mu}$ and $\hat{\sigma}$ are the MLE estimators
+   \begin{align}
+      a_1 \mu + b_1 \sigma + \mathbb{E}(\hat{\mu} - \mu) &= c_1\\
+      a_2 \mu + b_2 \sigma + \mathbb{E}(\hat{\sigma} - \sigma) &= c_2
+   \end{align}
+   Now suppose that $\hat{\mu}'$ and $\hat{\sigma}'$ are unbiased estimators, this implies that
+   \begin{align}
+      c_1 - \mathbb{E}(\hat{\mu}) &= (a_1 - 1) \mathbb{E}(\hat{\mu}') + b_1 \mathbb{E}(\hat{\sigma}')\\
+      c_2 - \mathbb{E}(\hat{\sigma}) &= a_2 \mathbb{E}(\hat{\mu}') + (b_2 - 1)\mathbb{E}(\hat{\sigma}')
+   \end{align}
+   If we define $\hat{\mu}'$ and $\hat{\sigma}'$ as
+   \begin{align}
+      \begin{pmatrix} \hat{\mu}' \\ \hat{\sigma}' \end{pmatrix}
+      =
+      \begin{pmatrix} a_1 - 1 & b_1 \\ a_2 & b_2 - 1 \end{pmatrix}^{-1}
+      \begin{pmatrix} c_1 - \hat{\mu} \\ c_2 - \hat{\sigma} \end{pmatrix}
+   \end{align}
+   then the estimators are unbiased.
 
-   \begin{thebibliography}{9}
-   \bibitem{HO1996}
-   Hart, P. E., Oulton N. (1997)
-   \\ \textit{Zipf and the size distribution of firms, Applied Economics Letters, 4:4, 205-206}
-   \\ DOI: 10.1080/758518494 
-   \end{thebibliography}
+
+
+
+
 \end{document}

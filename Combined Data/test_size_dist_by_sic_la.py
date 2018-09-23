@@ -12,6 +12,8 @@ def main():
 	size_by_la  = {}
 	#size_by_sic = {}
 
+	
+
 
 	for company in companies:
 		if company.company_number not in sizes:

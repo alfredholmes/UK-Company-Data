@@ -13,19 +13,29 @@ from multiprocessing import Pool
 import calculate_parameters
 
 def main():
-	sd = 1.2 # TODO: Randomize / use sample
-
 	fig = plt.figure()
 	ax = fig.add_subplot(111, projection='3d')
 
 
-	a = 0.5
-	b = 4
-	N = 40
+	X, Y, Z, W = generate_bias((0.5, 4), (0.5, 4), 50)
+	
+	ax.plot_surface(X, Y, Z, label='Mean Bias')
+	#ax.plot_surface(X, Y, W, label='Standard Deviation Bias', color='orange')
 
 
-	X = np.linspace(a, b, num=N)
-	Y = X
+	#plt.legend()
+	
+	ax.set_xlabel('Mean')
+	ax.set_ylabel('Standard Deviation')
+	ax.set_zlabel('Bias')
+
+	plt.savefig('sd_bias.png')
+	plt.show()
+
+
+def generate_bias(a, b, N):
+	X = np.linspace(a[0], a[1], num=N)
+	Y = np.linspace(b[0], b[1], num=N)
 
 	params = []
 
@@ -45,12 +55,8 @@ def main():
 		for j, y in enumerate(Y):
 			Z[i][j] = result[i + j * len(X)][0]
 			W[i][j] = result[i + j * len(X)][1]	
-	
-	ax.plot_wireframe(X, Y, Z, label='Mean Bias')
-	ax.plot_wireframe(X, Y, W, label='Standard Deviation Bias', color='orange')
-	plt.legend()
-	plt.savefig('bias.png')
-	plt.show()
+
+	return X, Y, Z, W
 
 
 def estimate_bias(n, mean, sd, sample_size=10):
@@ -62,7 +68,7 @@ def estimate_bias(n, mean, sd, sample_size=10):
 		binned_sample = sort_sample(sample)
 
 
-		params = calculate_parameters.max_likelyhood(binned_sample)
+		params = calculate_parameters.max_likelihood(binned_sample)
 		if params is None:
 			continue
 		recovered_mean, recovered_sd = params

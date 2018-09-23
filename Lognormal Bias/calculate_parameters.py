@@ -45,6 +45,23 @@ def main(files, output_dir):
 
     print(to_ignore)
 
+def remove_bias(mle_mean, mle_sd):
+    with open('plane_params.csv') as csvfile:
+        reader = csv.reader(csvfile)
+        mean_params = [float(x) for x in next(reader)]
+        sd_params = [float(x) for x in next(reader)]
+
+        #set params to be as in documentation
+
+        a_1, b_1, _, c_1 = (np.array(mean_params) / mean_params[2])
+        a_2, b_2, _, c_2 = (np.array(sd_params) / sd_params[2])
+        M = np.linalg.inv(([a_1 - 1, b_1], [a_2, b_2 - 1]))
+        
+       
+        mean, sd = np.matmul(M, np.array((c_1 - mle_mean, c_2 - mle_sd)))
+
+        return mean, sd
+
 
 
 
@@ -64,9 +81,7 @@ def match_expectation(size_dist):
 
 
 def max_likelihood(size_dist):
-    #result = minimize(lambda x: -likelyhood(x, size_dist), (0, 1), jac=lambda x: likelyhood_jacobian(x, size_dist), bounds=Bounds([-np.inf, 0], [np.inf, np.inf]))
-    result = minimize(lambda x: -likelyhood(x, size_dist), (0, 1), jac=lambda x: -likelyhood_jacobian(x, size_dist), bounds=Bounds([-np.inf, 0], [np.inf, np.inf]))
-    #result = minimize(lambda x: -likelyhood(x, size_dist), (0, 1), bounds=Bounds([-np.inf, 0], [np.inf, np.inf]))
+    result = minimize(lambda x: -likelihood(x, size_dist), (0, 1), jac=lambda x: -likelihood_jacobian(x, size_dist), bounds=Bounds([-np.inf, 0], [np.inf, np.inf]))
     #print(result)
 
     if result.success:
@@ -75,7 +90,7 @@ def max_likelihood(size_dist):
         return None
 
 
-def likelyhood(params, size_dist):
+def likelihood(params, size_dist):
     mean, sd = params
     total = 0
     for size_band, n in size_dist.items():
@@ -100,7 +115,7 @@ def likelyhood(params, size_dist):
     return total
 
 
-def likelyhood_jacobian(params, size_dist):
+def likelihood_jacobian(params, size_dist):
     jacobian = np.zeros(2)
     mean, sd = params
     for size_band, n in size_dist.items():
