@@ -17,11 +17,11 @@ def main():
 	ax = fig.add_subplot(111, projection='3d')
 
 
-	X, Y, Z, W = generate_bias((0.5, 4), (0.5, 4), 50)
+	X, Y, Z, W, fixed_Z, fixed_W = generate_bias((-2, 2), (0.1, 3), 50)
 	
 	ax.plot_surface(X, Y, Z, label='Mean Bias')
 	#ax.plot_surface(X, Y, W, label='Standard Deviation Bias', color='orange')
-
+	#ax.plot_surface(X, Y, fixed_Z, label='Unbiased mean')
 
 	#plt.legend()
 	
@@ -51,24 +51,28 @@ def generate_bias(a, b, N):
 	X, Y = np.meshgrid(X, Y)
 	Z = np.zeros((len(X), len(Y)))
 	W = np.zeros((len(X), len(Y)))
+	fixed_Z = np.zeros((len(X), len(Y)))
+	fixex_W = np.zeros((len(X), len(Y)))
 	for i, x in enumerate(X):
 		for j, y in enumerate(Y):
 			Z[i][j] = result[i + j * len(X)][0]
 			W[i][j] = result[i + j * len(X)][1]	
 
-	return X, Y, Z, W
+	return X, Y, Z, W, fixed_Z, fixex_W
 
 
 def estimate_bias(n, mean, sd, sample_size=10):
 	print(n, mean, sd)
 	mean_bias_total = 0
 	sd_bias_total = 0
+	fixed_mean_bias_total = 0
+	fixed_sd_bias_total = 0
 	for _ in range(sample_size):
 		sample = lognorm.rvs(sd, scale=np.exp(mean), size=n)
 		binned_sample = sort_sample(sample)
 
 
-		params = calculate_parameters.max_likelihood(binned_sample)
+		params = calculate_parameters.max_likelihood(binned_sample, sample.mean())
 		if params is None:
 			continue
 		recovered_mean, recovered_sd = params
@@ -76,7 +80,11 @@ def estimate_bias(n, mean, sd, sample_size=10):
 		mean_bias_total += recovered_mean - mean
 		sd_bias_total += recovered_sd - sd
 
-	return mean_bias_total / sample_size, sd_bias_total / sample_size
+		fixed_mean, fixed_sd = calculate_parameters.remove_bias(recovered_mean, recovered_sd)
+		fixed_mean_bias_total += fixed_mean - mean
+		fixed_sd_bias_total += fixed_sd - mean
+
+	return mean_bias_total / sample_size, sd_bias_total / sample_size, fixed_mean_bias_total / sample_size, fixed_sd_bias_total / sample_size
 
 	
 

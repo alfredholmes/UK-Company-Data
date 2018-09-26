@@ -3,7 +3,7 @@ from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 
 def main():
-	X, Y, Z, W = analysis.generate_bias((0.5, 2), (1, 4), 100)
+	X, Y, Z, W = analysis.generate_bias((-1, 1), (1, 2), 100)
 
 	mean_params = fit_plane(X, Y, Z)
 	sd_params = fit_plane(X, Y, W)

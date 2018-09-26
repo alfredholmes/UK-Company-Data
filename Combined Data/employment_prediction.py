@@ -20,8 +20,9 @@ def main():
 
 	#parameters calculated for national size dist as in lognormal parameter fitting
 	print('calculating sizes')
-	mean = 0.42316817
-	sd = 1.67381106
+	mean = 0.55490127
+	sd = 1.46275809
+	
 	sizes = sorted(lognorm.rvs(sd, scale=np.exp(mean), size=len(companies)))
 	print('done')
 

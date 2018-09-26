@@ -46,7 +46,7 @@ def main():
 
 def get_company_sizes():
 	sizes = {}
-	with open('2014_sizes.csv', 'r') as csvfile:
+	with open('2014_sizes_no_repeated_addresses.csv', 'r') as csvfile:
 		reader = csv.reader(csvfile)
 		for line in reader:
 			sizes[line[0]] = int(round(float(line[1])))

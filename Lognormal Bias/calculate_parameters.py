@@ -5,11 +5,11 @@ The details of the calculations in this script are in the appendix of the docs.
 """
 
 import sys, csv
-from scipy.optimize import minimize, Bounds
+from scipy.optimize import minimize, Bounds, NonlinearConstraint
 from scipy.stats import norm, lognorm
 import numpy as np
 
-
+a_1, b_1, c_1, a_2, b_2, c_2, M = None, None, None, None, None, None, None
 
 def main(files, output_dir):
     to_ignore = 0
@@ -18,7 +18,7 @@ def main(files, output_dir):
         parameters = {}
         options = []
         for key, size_dist in company_sizes.items():
-            option_1 = max_likelyhood(size_dist)
+            option_1 = max_likelihood(size_dist)
             option_2 = match_expectation(size_dist)
             options.append((option_1, option_2))
 
@@ -46,21 +46,23 @@ def main(files, output_dir):
     print(to_ignore)
 
 def remove_bias(mle_mean, mle_sd):
-    with open('plane_params.csv') as csvfile:
-        reader = csv.reader(csvfile)
-        mean_params = [float(x) for x in next(reader)]
-        sd_params = [float(x) for x in next(reader)]
+    global a_1, b_1, c_1, a_2, b_2, c_2, M
+    if a_1 is None:
+        with open('plane_params.csv') as csvfile:
+            reader = csv.reader(csvfile)
+            mean_params = [float(x) for x in next(reader)]
+            sd_params = [float(x) for x in next(reader)]
 
-        #set params to be as in documentation
+            #set params to be as in documentation
 
-        a_1, b_1, _, c_1 = (np.array(mean_params) / mean_params[2])
-        a_2, b_2, _, c_2 = (np.array(sd_params) / sd_params[2])
-        M = np.linalg.inv(([a_1 - 1, b_1], [a_2, b_2 - 1]))
-        
-       
-        mean, sd = np.matmul(M, np.array((c_1 - mle_mean, c_2 - mle_sd)))
+            a_1, b_1, _, c_1 = (np.array(mean_params) / mean_params[2])
+            a_2, b_2, _, c_2 = (np.array(sd_params) / sd_params[2])
+            M = np.linalg.inv(([a_1 - 1, b_1], [a_2, b_2 - 1]))
+            
+           
+    mean, sd = np.matmul(M, np.array((c_1 - mle_mean, c_2 - mle_sd)))
 
-        return mean, sd
+    return mean, sd
 
 
 
@@ -80,8 +82,11 @@ def match_expectation(size_dist):
         return None
 
 
-def max_likelihood(size_dist):
-    result = minimize(lambda x: -likelihood(x, size_dist), (0, 1), jac=lambda x: -likelihood_jacobian(x, size_dist), bounds=Bounds([-np.inf, 0], [np.inf, np.inf]))
+def max_likelihood(size_dist, distribution_mean=None):
+    if distribution_mean is None:
+        result = minimize(lambda x: -likelihood(x, size_dist), (0, 1), jac=lambda x: -likelihood_jacobian(x, size_dist), bounds=Bounds([-np.inf, 0], [np.inf, np.inf]))
+    else:
+        result = minimize(lambda x: -likelihood(x, size_dist), (0, 1), jac=lambda x: -likelihood_jacobian(x, size_dist), bounds=Bounds([-np.inf, 0], [np.inf, np.inf]), constraints={'type': 'eq', 'fun': lambda x: np.exp(x[0] + x[1] ** 2) - distribution_mean})
     #print(result)
 
     if result.success:
