@@ -1,12 +1,19 @@
 \BOOKMARK [1][-]{section.1}{Introduction}{}% 1
 \BOOKMARK [2][-]{subsection.1.1}{Definitions}{section.1}% 2
-\BOOKMARK [1][-]{section.2}{Data}{}% 3
+\BOOKMARK [1][-]{section.2}{Available Data}{}% 3
 \BOOKMARK [2][-]{subsection.2.1}{Companies House}{section.2}% 4
 \BOOKMARK [3][-]{subsubsection.2.1.1}{Snapshots}{subsection.2.1}% 5
 \BOOKMARK [3][-]{subsubsection.2.1.2}{Accounts}{subsection.2.1}% 6
 \BOOKMARK [3][-]{subsubsection.2.1.3}{Companies House API}{subsection.2.1}% 7
 \BOOKMARK [2][-]{subsection.2.2}{Office for National Statistics}{section.2}% 8
 \BOOKMARK [3][-]{subsubsection.2.2.1}{Business Activity, Size and Location}{subsection.2.2}% 9
-\BOOKMARK [3][-]{subsubsection.2.2.2}{Other Useful Data}{subsection.2.2}% 10
-\BOOKMARK [1][-]{section.3}{The Log Normal Hypothesis}{}% 11
-\BOOKMARK [2][-]{subsection.3.1}{MLE and it's Bias}{section.3}% 12
+\BOOKMARK [3][-]{subsubsection.2.2.2}{Postcode Data}{subsection.2.2}% 10
+\BOOKMARK [3][-]{subsubsection.2.2.3}{Employment}{subsection.2.2}% 11
+\BOOKMARK [1][-]{section.3}{Issues Combining ONS and Companies House data}{}% 12
+\BOOKMARK [2][-]{subsection.3.1}{Number of Companies}{section.3}% 13
+\BOOKMARK [2][-]{subsection.3.2}{SIC Codes}{section.3}% 14
+\BOOKMARK [1][-]{section.4}{Fitting Lognormal Distributions}{}% 15
+\BOOKMARK [2][-]{subsection.4.1}{MLE}{section.4}% 16
+\BOOKMARK [3][-]{subsubsection.4.1.1}{Simulations}{subsection.4.1}% 17
+\BOOKMARK [1][-]{section.5}{Assigning Sizes and Turnover to companies}{}% 18
+\BOOKMARK [2][-]{subsection.5.1}{Results}{section.5}% 19

@@ -83,10 +83,17 @@ def match_expectation(size_dist):
 
 
 def max_likelihood(size_dist, distribution_mean=None):
+    """ Returns the estimated mean, sd from size dist
+
+        Arguments
+        ------------
+        size_dist: dict of the form {str: float or int} where the string is 'a_i-a_i+1' or 'a_n+' and the float or int is the proportion or number of companies in that bin.
+        (optional) distribution_mean: if the mean of the distribution is known then this is a constraint that can be used to improve the estimation.
+    """
     if distribution_mean is None:
         result = minimize(lambda x: -likelihood(x, size_dist), (0, 1), jac=lambda x: -likelihood_jacobian(x, size_dist), bounds=Bounds([-np.inf, 0], [np.inf, np.inf]))
     else:
-        result = minimize(lambda x: -likelihood(x, size_dist), (0, 1), jac=lambda x: -likelihood_jacobian(x, size_dist), bounds=Bounds([-np.inf, 0], [np.inf, np.inf]), constraints={'type': 'eq', 'fun': lambda x: np.exp(x[0] + x[1] ** 2) - distribution_mean})
+        result = minimize(lambda x: -likelihood(x, size_dist), (0, 1), jac=lambda x: -likelihood_jacobian(x, size_dist), bounds=Bounds([-np.inf, 0], [np.inf, np.inf]), constraints={'type': 'eq', 'fun': lambda x: np.exp(x[0] + x[1] ** 2 / 2) - distribution_mean})
     #print(result)
 
     if result.success:

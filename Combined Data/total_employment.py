@@ -10,4 +10,4 @@ def main():
 	print(total)
 
 if __name__ == '__main__':
-	main()
+	main()	

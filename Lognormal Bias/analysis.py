@@ -13,11 +13,13 @@ from multiprocessing import Pool
 import calculate_parameters
 
 def main():
-	fig = plt.figure()
-	ax = fig.add_subplot(111, projection='3d')
+
+	fig = plt.figure(figsize=(20, 10))
+	ax = fig.add_subplot(121, projection='3d')
+	ax.set_title('Mean Bias')
 
 
-	X, Y, Z, W, fixed_Z, fixed_W = generate_bias((-2, 2), (0.1, 3), 50)
+	X, Y, Z, W, fixed_Z, fixed_W = generate_bias((-2, 2), (0.5, 3), 10)
 	
 	ax.plot_surface(X, Y, Z, label='Mean Bias')
 	#ax.plot_surface(X, Y, W, label='Standard Deviation Bias', color='orange')
@@ -27,9 +29,24 @@ def main():
 	
 	ax.set_xlabel('Mean')
 	ax.set_ylabel('Standard Deviation')
-	ax.set_zlabel('Bias')
+	ax.set_zlabel('Mean Bias')
 
-	plt.savefig('sd_bias.png')
+	
+
+	
+	ax = fig.add_subplot(122, projection='3d')
+	ax.set_title('Standard Deviation Bias')
+
+
+	ax.set_xlabel('Mean')
+	ax.set_ylabel('Standard Deviation')
+	ax.set_zlabel('Mean Bias')
+
+	
+
+
+	ax.plot_surface(X, Y, W, label='Mean Bias')
+	plt.savefig('bias_no_dist_mean.png')
 	plt.show()
 
 
@@ -41,7 +58,7 @@ def generate_bias(a, b, N):
 
 	for x in X:
 		for y in Y:
-			params.append((10000, x, y))
+			params.append((170000, x, y))
 
 	with Pool() as p:
 		result = p.starmap(estimate_bias, params)
@@ -61,30 +78,43 @@ def generate_bias(a, b, N):
 	return X, Y, Z, W, fixed_Z, fixex_W
 
 
-def estimate_bias(n, mean, sd, sample_size=10):
+def estimate_bias(n, mean, sd, sample_size=100):
 	print(n, mean, sd)
-	mean_bias_total = 0
-	sd_bias_total = 0
-	fixed_mean_bias_total = 0
-	fixed_sd_bias_total = 0
+	mean_total = 0
+	sd_total = 0
+	fixed_mean_total = 0
+	fixed_sd_total = 0
 	for _ in range(sample_size):
-		sample = lognorm.rvs(sd, scale=np.exp(mean), size=n)
-		binned_sample = sort_sample(sample)
+		if n is not None:
+			sample = lognorm.rvs(sd, scale=np.exp(mean), size=n)
+			binned_sample = sort_sample(sample)
+			binned_sample = {s : v / n for s, v in binned_sample.items()}
 
 
-		params = calculate_parameters.max_likelihood(binned_sample, sample.mean())
+			#params = calculate_parameters.max_likelihood(binned_sample, sample.mean())
+			params = calculate_parameters.max_likelihood(binned_sample)
+			
+		else:
+			max_sizes = [0.00001, 5, 10, 20, 50, 100, 250, 10**10]
+			titles = ['0-4', '5-9', '10-19', '20-49', '50-99', '100-249', '250+']
+
+			binned_sample = {titles[i]: lognorm.cdf(max_sizes[i + 1], sd, scale=np.exp(mean)) - lognorm.cdf(max_sizes[i], sd, scale=np.exp(mean)) for i in range(len(max_sizes) - 1)}
+
+			params = calculate_parameters.max_likelihood(binned_sample, np.exp(mean + sd ** 2 / 2))
+			#print(params)
+
 		if params is None:
 			continue
 		recovered_mean, recovered_sd = params
 
-		mean_bias_total += recovered_mean - mean
-		sd_bias_total += recovered_sd - sd
+		mean_total += recovered_mean - mean
+		sd_total += recovered_sd - sd
 
-		fixed_mean, fixed_sd = calculate_parameters.remove_bias(recovered_mean, recovered_sd)
-		fixed_mean_bias_total += fixed_mean - mean
-		fixed_sd_bias_total += fixed_sd - mean
+		#fixed_mean, fixed_sd = calculate_parameters.remove_bias(recovered_mean, recovered_sd)
+		#fixed_mean_total += fixed_mean
+		#fixed_sd_total += fixed_sd
 
-	return mean_bias_total / sample_size, sd_bias_total / sample_size, fixed_mean_bias_total / sample_size, fixed_sd_bias_total / sample_size
+	return mean_total / sample_size, sd_total / sample_size, fixed_mean_total / sample_size, fixed_sd_total / sample_size
 
 	
 
@@ -97,7 +127,7 @@ def sort_sample(sample, bins=['0-4', '5-9', '10-19', '20-49', '50-99', '100-249'
 	for b in bins:
 		if '-' in b:
 			lower = float(b.split('-')[0])
-			upper = float(b.split('-')[1])
+			upper = float(b.split('-')[1]) + 1
 		else:
 			lower = float(b.split('+')[0])
 			upper = np.inf

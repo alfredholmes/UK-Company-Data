@@ -37,15 +37,13 @@ def get_companies():
 	print('loading companies')
 	companies = []
 	i = 0
-	with open('combined_data.json', 'r') as file:
+	with open('enterprises.json', 'r') as file:
 		for c in ijson.items(file, 'item'):
 			if i % 10000 == 0:
 				print('\t', i)
 			i += 1
 			if 'death_date' not in c:
-				companies.append(Company(c['company_number'], c['birth_date'], c['address'], c['status'], c['sic_codes'], c['accounts']))
-			else:
-				companies.append(Company(c['company_number'], c['birth_date'], c['address'], c['status'], c['sic_codes'], c['accounts'], c['death_date']))
+				
 	print('\t done')
 	return companies
 

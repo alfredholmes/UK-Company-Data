@@ -33,13 +33,13 @@ def main():
 	for la in las:
 
 		for s in size_bands:
-			#observed_lists[s].append(observed[la][s] / actual_totals[la])
-			#predicted_lists[s].append(predicted[la][s] / predicted_totals[la]) 	
-			observed_lists[s].append(observed[la][s])
-			predicted_lists[s].append(predicted[la][s]) 	
+			observed_lists[s].append(observed[la][s] / actual_totals[la])
+			predicted_lists[s].append(predicted[la][s] / predicted_totals[la]) 	
+			#observed_lists[s].append(observed[la][s])
+			#predicted_lists[s].append(predicted[la][s]) 	
 
 
-	#plt.loglog()
+	plt.loglog()
 	for s in size_bands:
 
 		plt.scatter(observed_lists[s], predicted_lists[s], label=s)

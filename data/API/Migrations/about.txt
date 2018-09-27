@@ -1,0 +1,18 @@
+The script get_migrations.py pulls company migration data from the
+companies house api
+
+To run you need enter a companies house api key into an array in a
+python file called apikeys.py
+
+The CompanyNumbers2012-2018.csv file contains a collated list of
+companies from the companies house snapshots from years 2012,
+2013, 2014, 2016, 2017 (2015 is missing) available on the web
+archive - see ../sources.txt for more details
+
+postcode_la.csv is a slimmed down postcode file available from ONS (see
+../sources.txt) with only the postcode and local authority id
+
+The script get_migrations.py writes to a csv after every 100 companies
+the data for each move - the data contains the company id, from
+postcode, to postcode, from LA, to LA, company incorporation date and 
+number of filings at the time of moving
