@@ -30,16 +30,18 @@ def main():
 		for address, enterprise in enterprises.items():
 			if i % 10000 == 0:
 				print(i)
-
 			i += 1
 			
 			dead = True
 			birth_date = None
 			death_date = None	
-			
+			sic_codes = set()
 			assets = {d: 0 for d in asset_dates}
 
 			for company in enterprise:
+				for s in company.sic_codes.values():
+					sic_codes = sic_codes.union(set(s))
+				
 				if company.death_date is None:
 					dead = False
 				else:
@@ -49,10 +51,10 @@ def main():
 				if birth_date is None or (company.birth_date - birth_date).days < 0:
 					birth_date = company.birth_date
 				
-				for date in asset_dates:
+				for date in asset_dates:	
 					assets[date] += company.asset_at_date('assets', date)
 
-			enterprise_data = {'address': [a for a in address], 'birth_date': birth_date.strftime('%Y-%m-%d'), 'assets': {d.strftime('%Y-%m-%d'): v for d, v in assets.items()}}
+			enterprise_data = {'address': {d.strftime('%Y-%m-%d'): v for d, v in company.addresses.items()}, 'birth_date': birth_date.strftime('%Y-%m-%d'), 'assets': {d.strftime('%Y-%m-%d'): v for d, v in assets.items()}, 'sic_codes': [x for x in sic_codes]}
 			if death_date is not None:
 				enterprise_data['death_date'] = death_date.strftime('%Y-%m-%d')
 
@@ -60,7 +62,10 @@ def main():
 
 			f.write('    ')
 			f.write(json.dumps(enterprise_data))
-			f.write(',\n')
+			if i != len(enterprises):
+				f.write(',\n')
+			else:
+				f.write('\n')
 		f.write(']\n')
 
 

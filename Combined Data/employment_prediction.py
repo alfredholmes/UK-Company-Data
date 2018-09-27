@@ -1,5 +1,5 @@
 import sys
-import ijson, csv, json
+import ijson, csv, json, datetime
 
 from scipy.stats import lognorm
 
@@ -7,66 +7,61 @@ import numpy as np
 
 sys.path.append('../lib')
 
-from accounts.company import Company 
+from accounts.company import Company
 
 def main():
 
 
-	companies = get_companies()
+	enterprises = get_enterprises()
 
 	print('sorting companies')
-	companies = sort_companies(companies, 2014)
+	enterprises = sort_enterprises(enterprises, 2014)
 	print('done')
 
 	#parameters calculated for national size dist as in lognormal parameter fitting
 	print('calculating sizes')
-	mean = 0.55490127
-	sd = 1.46275809
+	mean = 0.20971199
+	sd = 2.09891958
 	
-	sizes = sorted(lognorm.rvs(sd, scale=np.exp(mean), size=len(companies)))
+	sizes = sorted(lognorm.rvs(sd, scale=np.exp(mean), size=len(enterprises)))
 	print('done')
 
 
-	with open('2014_sizes.csv', 'w') as csvfile:
+	with open('2014_enterprise_sizes.csv', 'w') as csvfile:
 		writer = csv.writer(csvfile)
-		for i in range(len(companies)):
-			writer.writerow([companies[i].company_number, sizes[i]])
+		for i in range(len(enterprises)):
+			writer.writerow([json.dumps(enterprises[i]['address']), sizes[i]])
 
 
-def get_companies():
-	print('loading companies')
-	companies = []
+def get_enterprises(year=None):
+	print('loading enterprises')
+	enterprises = []
 	i = 0
 	with open('enterprises.json', 'r') as file:
-		for c in ijson.items(file, 'item'):
-			if i % 10000 == 0:
-				print('\t', i)
-			i += 1
-			if 'death_date' not in c:
-				
+		try:
+			for c in ijson.items(file, 'item'):
+				if i % 10000 == 0:
+					print('\t', i)
+				i += 1
+				if year is not None:
+					if not enterprise_alive_in_year(enterprise, year):
+						continue
+				enterprises.append(c)
+		except:
+			pass
 	print('\t done')
-	return companies
+	return enterprises
 
 
-def sort_companies(companies, year):
-	""" Sorts array of companies, by assets
-	
-	Arguments:
-	---------------
-		companies: array of companies
-		year: year in which companies are sorted
-	
-	Returns:
-	---------------
-		array of companies in order
-	"""
-	year = str(year)
-	#build company dict
-	print('\t' + 'Filtering companies')
-	companies = [c for c in companies if c.alive_in_year(2014)]
-	print('\t' + 'done')
-	print('\t' + 'sorting return')
-	return sorted(companies, key=lambda c: c.get_account_size(2014))	
+def sort_enterprises(enterprises, year):
+	print('sorting enterprises')
+	date_string = datetime.datetime(year, 1, 1).strftime('%Y-%m-%d')
+	return sorted(enterprises, key=lambda c: c['assets'][date_string])
+
+
+def enterprise_alive_in_year(enterprise, year):
+	date = datetime.datetime(year, 1, 1)
+	return (date - datetime.datetime.strptime(enterprise['birth_date'], '%Y-%m-%d')).days >= 0 and (enterprise['death_date'] is None or (date - datetime.datetime.strptime(enterprise['death_date'])).days > 0)
 
 	
 

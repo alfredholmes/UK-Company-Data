@@ -6,7 +6,7 @@ def main():
 	size_bands = ['0-4', '5-9', '10-19', '20-49', '50-99', '100-249', '250+']
 
 	observed = read_csv('2014_enterprise_size_by_la.csv')
-	predicted = read_csv('predicted_2014_size_by_la.csv')
+	predicted = read_csv('predicted_la_size_bands.csv')
 
 
 	actual_totals = {}
@@ -39,12 +39,15 @@ def main():
 			#predicted_lists[s].append(predicted[la][s]) 	
 
 
-	plt.loglog()
+	#plt.loglog()
 	for s in size_bands:
 
 		plt.scatter(observed_lists[s], predicted_lists[s], label=s)
 	plt.plot([0] + observed_lists['0-4'], [0] + observed_lists['0-4'])
 	plt.legend()
+	plt.xlabel('Predicted Proportion')
+	plt.ylabel('Actual Proportion')
+	plt.savefig('national_distribution_employment_reconstuction.png')
 	plt.show()
 
 

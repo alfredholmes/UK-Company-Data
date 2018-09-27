@@ -8,48 +8,40 @@ import matplotlib.pyplot as plt
 import calculate_parameters
 
 def main(files):
-    for file in files:
-        dist_data = calculate_parameters.read_file(file)
-        ratios = {}
-        for key, size_dist in dist_data.items():
-            params = calculate_parameters.max_likelihood(size_dist)
-            if params is None:
-                continue
-            mean, sd = params
-            total = np.sum([n for n in size_dist.values()])
+    files = [files[i:i+2] for i in range(int(len(files) / 2))] # TODO: need to make this neater, the script takes two inputs
+    with open('2014_output.csv', 'w') as csvfile:
+        writer = csv.writer(csvfile)
+        for file in files:
+            dist_data = calculate_parameters.read_file(file[0])
+            employment = get_employment(file[1])
+            ratios = {}
+            for key, size_dist in dist_data.items():
+                #print(size_dist)
+                total = np.sum([n for n in size_dist.values()])
+                params = calculate_parameters.max_likelihood(size_dist, employment[key] / total)
+                if params is None:
+                    continue
+                mean, sd = params
+                expected = expected_bands(mean, sd, [bands for bands in size_dist])
 
-            expected_biased = expected_bands(mean, sd, [bands for bands in size_dist])
-            print(mean, sd)
-            mean, sd = calculate_parameters.remove_bias(mean, sd)
-            
-            expected_unbiased = expected_bands(mean, sd, [bands for bands in size_dist])
+                
+                writer.writerow([key, mean, sd])
+                for size_band, n in size_dist.items():
+                    if size_band in ratios:
+                        ratios[size_band]['x'].append(n / total)
+                        ratios[size_band]['y'].append(expected[size_band])
 
-            for size_band, n in size_dist.items():
-                if size_band in ratios:
-                    ratios[size_band]['x'].append(n / total)
-                    ratios[size_band]['y'].append(expected_biased[size_band])
-                    ratios[size_band]['z'].append(expected_unbiased[size_band])
-                else:
-                    ratios[size_band] = {'x': [n / total], 'y': [expected_biased[size_band]], 'z': [expected_unbiased[size_band]]}
-        plt.figure(0)
-        plt.loglog()
-        for band, data in ratios.items():
-            plt.scatter(data['x'], data['y'], label=band)
-        plt.legend()
+                    else:
+                        ratios[size_band] = {'x': [n / total], 'y': [expected[size_band]]}
+            plt.figure(0)
+            plt.loglog()
+            for band, data in ratios.items():
+                plt.scatter(data['x'], data['y'], label=band)
+            plt.legend()
 
-        plt.plot([0, 1], [0, 1])
-        plt.savefig('graphs/' + file[:-4] + 'biased' + '.png')
-        
-        plt.figure(1)
-        plt.loglog()
-        for band, data in ratios.items():
-            plt.scatter(data['x'], data['z'], label=band)
-        plt.legend()
-
-        plt.plot([0, 1], [0, 1])
-        plt.savefig('graphs/' + file[:-4] + 'unbiased' + '.png')
-
-        plt.show()
+            plt.plot([0, 1], [0, 1])
+            plt.savefig('graphs/' + file[0][:-4] + '.png')
+            plt.show()
 
 
 
@@ -68,6 +60,14 @@ def expected_bands(mean, sd, size_bands):
 
     return sizes
 
+def get_employment(file):
+    with open(file, 'r') as f:
+        employment = {}
+        reader = csv.reader(f)
+        for line in reader:
+            employment[line[0]] = float(line[3]) * 1000
+
+        return employment
 
 
 

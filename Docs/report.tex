@@ -104,15 +104,9 @@
 
    \subsubsection{Simulations}
 
-   In order to test whether the MLE can recover the distribution parameters from the size bins we ran simulations: picking random numbers from a known distribution and then trying to recover the distribution parameters. For these simulations we assume that the number of companies is large enough that the number of companies in each bin is the expected number of companies. The python scripts for these simulations can be found in the \texttt{Lognormal Bias} folder in \cite{github}. Running the script \texttt{analysis.py} gives an interactive version of the 3D graphs in figure \ref{}.
+   In order to test whether the MLE can recover the distribution parameters from the size bins we ran simulations: picking random numbers from a known distribution and then trying to recover the distribution parameters. For these simulations we assume that the number of companies is large enough that the number of companies in each bin is the expected number of companies. The python scripts for these simulations can be found in the \texttt{Lognormal Bias} folder in \cite{github}. Running the script \texttt{analysis.py} gives an interactive version of the 3D graphs in figure \ref{bias}.
 
 
-
-   \begin{figure}[!ht]
-      \caption{Parameter recovery with $\mu = 0.5$ and $\sigma = 1.5$}
-      \label{mle_results}
-      \includegraphics[width=\textwidth]{graphs/recovered_parameter_distribution}
-   \end{figure}
    \begin{figure}[!ht]
       \begin{center}
          \caption{Simulated Bias}
@@ -121,7 +115,8 @@
       \end{center}
    \end{figure}
    Figure \ref{bias} shows that the parameter estimation generally works quite well for the values 
-
+   \subsubsection{Matching Enterprise Employment}
+   \label{enterprise_employment}
    \section{Assigning Sizes and Turnover to companies}
    For this section we will focus on the year 2014. The same approach can be used for all the other years in the sample. To assign the size to companies we assume the following:
    \begin{itemize}
@@ -130,6 +125,15 @@
    \end{itemize}
 
    We then pull $n$ numbers from the fitted lognormal national distribution of company sizes, where $n$ is the total number of companies, and sort the list. We then sort the companies by asset size and assign company $i$ size $i$.
+   Then plotting the results on a graph in a similar way to \ref{enterprise_employment} we get figure \ref{enterprise_employment_reconstruction}
+
+   \begin{figure}
+      \begin{center}
+         \includegraphics[width=10cm]{graphs/national_distribution_employment_reconstuction}
+         \caption{National Employment Reconstruction}
+         \label{enterprise_employment_reconstruction}
+      \end{center}
+   \end{figure}
 
    \subsection{Results}
 
