@@ -9,7 +9,6 @@ from scipy.optimize import minimize, Bounds, NonlinearConstraint
 from scipy.stats import norm, lognorm
 import numpy as np
 
-a_1, b_1, c_1, a_2, b_2, c_2, M = None, None, None, None, None, None, None
 
 def main(files, output_dir):
     to_ignore = 0
@@ -44,26 +43,6 @@ def main(files, output_dir):
                 writer.writerow([key, params[0], params[1]])
 
     print(to_ignore)
-
-def remove_bias(mle_mean, mle_sd):
-    global a_1, b_1, c_1, a_2, b_2, c_2, M
-    if a_1 is None:
-        with open('plane_params.csv') as csvfile:
-            reader = csv.reader(csvfile)
-            mean_params = [float(x) for x in next(reader)]
-            sd_params = [float(x) for x in next(reader)]
-
-            #set params to be as in documentation
-
-            a_1, b_1, _, c_1 = (np.array(mean_params) / mean_params[2])
-            a_2, b_2, _, c_2 = (np.array(sd_params) / sd_params[2])
-            M = np.linalg.inv(([a_1 - 1, b_1], [a_2, b_2 - 1]))
-            
-           
-    mean, sd = np.matmul(M, np.array((c_1 - mle_mean, c_2 - mle_sd)))
-
-    return mean, sd
-
 
 
 

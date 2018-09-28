@@ -15,86 +15,79 @@ def main():
 
 
 	enterprises = get_enterprises(2014)
-	distribution_parameters = get_la_params()
-	actual_size_dists = get_sic_data()
+	distribution_parameters = get_sic_params()
+	actual_size_dists = get_la_data()
 
 	print('sorting companies')
-	enterprises_by_la = sort_enterprises(enterprises, 2014)
+	enterprises_by_sic = sort_enterprises(enterprises, 2014)
 	print('done')
 
 	#parameters calculated for national size dist as in lognormal parameter fitting
 
-	for la, enterprises in enterprises_by_la.items():
-		if la is None:
+	for sic, enterprises in enterprises_by_sic.items():
+		if sic is None:
 			continue
-		print(la)
-		if la not in distribution_parameters:
-			print(la  + ' missing', len(enterprises))
+		if sic not in distribution_parameters:
+			print(sic  + ' missing', len(enterprises))
 			continue
 		
 		
-		mean = distribution_parameters[la]['mean']
-		sd = distribution_parameters[la]['sd']
+		mean = distribution_parameters[sic]['mean']
+		sd = distribution_parameters[sic]['sd']
 		
 		sizes = sorted(lognorm.rvs(sd, scale=np.exp(mean), size=len(enterprises)))
 		for i, s in enumerate(sizes):
 			enterprises[i]['size'] = int(round(float(s)))
+	print('writing to file')
+	
+	with open('enterprises_with_size_from_sic.json', 'w') as f:
+		json.dump(enterprises_by_sic, f, indent=4)
 
-		print('done')
 	top_bands = [5, 10, 20, 50, 100, 250, np.inf]
 	bands = ['0-4', '5-9', '10-19', '20-49', '50-99', '100-249', '250+']
 	reconstructed = {} 		
 
-	sic_codes = set()
+	las = set()
 
-	for la, enterprises in enterprises_by_la.items():
-		if la not in distribution_parameters:
-			continue
+	for sic, enterprises in enterprises_by_sic.items():
 		for enterprise in enterprises:
-			for sic_code in enterprise['sic_codes']:
-				
-				if int(str(sic_code)[:2]) != '99' and int(str(sic_code)[:2]) in actual_size_dists:
-					sic = int(str(sic_code)[:2])
-					break
-			else:
-				continue
+			la = Company(None, '2012-01-01', enterprise['address'], {}, {}).la(2014)
 
+			las.add(la)
+
+			if la not in reconstructed:
+				reconstructed[la] = {b: 0 for b in bands}
 			
-			sic_codes.add(sic)
-			if sic not in reconstructed:
-				reconstructed[sic] = {s: 0 for s in bands}
-
 			
 			for i, upper in enumerate(top_bands):
 				if enterprise['size'] < upper:
 					band = bands[i]
 					break
 
-			reconstructed[sic][band] += 1
+			reconstructed[la][band] += 1
 
 		
-	sic_codes_to_plot = sic_codes.intersection(set(actual_size_dists.keys()))
+	la_to_plot = las.intersection(set(actual_size_dists.keys()))
 
-	print(sic_codes, set(actual_size_dists.keys()))
+
 
 	for b in bands:
 		x = []
 		y = []
-		for sic in sic_codes_to_plot:
-			print(sic, b)
-			x.append(actual_size_dists[sic][b] / np.sum([z for z in actual_size_dists[sic].values()]))
-			y.append(reconstructed[sic][b] / np.sum([z for z in reconstructed[sic].values()]))
+		for la in la_to_plot:
+			x.append(actual_size_dists[la][b] / np.sum([z for z in actual_size_dists[la].values()]))
+			y.append(reconstructed[la][b] / np.sum([z for z in reconstructed[la].values()]))
 
 		plt.scatter(x, y, label=b)
+	plt.loglog()
+	plt.xlim([10**-4, 10**0])
+	plt.ylim([10**-4, 10**0])
 	plt.legend()
+	plt.plot([0, 1], [0, 1])
 	plt.xlabel('Actual proportion')
 	plt.ylabel('Predicted Proportion')
-	plt.savefig('2014_sic_reconstruction.png')
+	plt.savefig('2014_la_reconstruction.png')
 	plt.show()
-
-
-
-
 
 
 
@@ -113,34 +106,40 @@ def get_enterprises(year=None):
 			if year is not None:
 				if not enterprise_alive_in_year(c, year):
 					continue
+			for key, value in c['assets'].items():
+				c['assets'][key] = float(value)
 			enterprises.append(c)
 	print('\t done')
 	return enterprises
 
-def get_la_params():
-	with open('2014_local_authority_log_normal_parameters.csv', 'r') as csvfile:
+def get_sic_params():
+	with open('2014_SIC_params.csv', 'r') as csvfile:
 		data = {}
 		reader = csv.reader(csvfile)
 		for line in reader:
-			data[line[0]] = {'mean': float(line[1]), 'sd': float(line[2])}
+			data[int(line[0])] = {'mean': float(line[1]), 'sd': float(line[2])}
 
 	return data
 
 def sort_enterprises(enterprises, year):
-	enterprises_by_la = {la: [] for la in get_la_params()}
+	enterprises_by_sic = {sic: [] for sic in get_sic_params()}
 	print('splitting_by_la.csv')
 	for enterprise in enterprises:
-		la = Company(None, '2012-01-01', enterprise['address'], {}, {}).la(2014)
-		if la in enterprises_by_la:
-			enterprises_by_la[la].append(enterprise)
-		else:
-			enterprises_by_la[la] = [enterprise]
-
+		sic = None
+		for s in enterprise['sic_codes']:
+			if int(str(s)[:2]) in enterprises_by_sic:
+				sic = int(str(s)[:2])
+				break
+		if sic is None:
+			continue
+		
+		enterprises_by_sic[sic].append(enterprise)
+		
 	print('sorting enterprises')
 
 	date_string = datetime.datetime(year, 1, 1).strftime('%Y-%m-%d')
 		
-	return {la: sorted(enterprises, key=lambda c: c['assets'][date_string]) for la, enterprises in enterprises_by_la.items()}
+	return {sic: sorted(enterprises, key=lambda c: c['assets'][date_string]) for sic, enterprises in enterprises_by_sic.items()}
 
 
 def enterprise_alive_in_year(enterprise, year):
@@ -148,12 +147,12 @@ def enterprise_alive_in_year(enterprise, year):
 	return (date - datetime.datetime.strptime(enterprise['birth_date'], '%Y-%m-%d')).days >= 0 and ('death_date' not in enterprise or (date - datetime.datetime.strptime(enterprise['death_date'])).days > 0)
 
 	
-def get_sic_data():
+def get_la_data():
 	size_bands = {}
-	with open('2014_enterprise_size_by_sic.csv', 'r') as csvfile:
+	with open('2014_enterprise_size_by_la.csv', 'r') as csvfile:
 		reader = csv.DictReader(csvfile)
 		for line in reader:
-			size_bands[int(line['SIC'])] = {s: float(v) for s, v in line.items() if '-' in s or '+' in s }
+			size_bands[line['la']] = {s: float(v) for s, v in line.items() if '-' in s or '+' in s }
 
 
 	return size_bands

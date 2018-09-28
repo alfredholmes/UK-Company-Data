@@ -14,7 +14,7 @@
 \begin{document}
    \maketitle
    \begin{abstract}
-   The UK government, through the Office for National Statistics and Companies House release detailed data on UK companies. Using this publicly available data, it is possible to track the location and assets of companies through time and using few assumptions assign branches, employees and turnover to these companies in such a way as to match the Office for National Statistics annual reports. This report summaries the available data and details the use of the data to compile a granular dataset.
+   The UK government, through the Office for National Statistics and Companies House release detailed data on UK companies. Using this publicly available data, it is possible to track the location and assets of companies through time and using few assumptions assign employment sizes to these companies and reproduce ONS reported data. This report summaries the available data and details the use of the data to compile a granular dataset.
    \end{abstract}
    \section{Introduction}
    To use contemporary techniques to model the UK economy, a detailed granular dataset of UK companies is required. Ideally the dataset would contain the employment size and turnover evolution of each company, as well as the location and number of employees of individual branches through time. From this, one could easily generate a detailed picture of the UK economy through time.
@@ -23,7 +23,6 @@
    \begin{itemize}
  	\item Company - an entity registered on Companies House. In June 2017 there were 3.1 million registered companies in the UK. 
  	\item Enterprise - a business that is reported by ONS. We assume that an enterprise is a collection of companies. In 2017 the ONS reported 2.7 million enterprises.
- 	\item Local Unit - a site where an enterprise operates, e.g. a branch of a large supermarket chain or the only location from which a small firm operates.
  	\item Local Authority - a connected area of land the UK governed by a council. At the time of writing, local authorities have a population of 170 000 people and 7 000 enterprises on average. There are 391 local authorities in the UK.
    \end{itemize}
 
@@ -37,7 +36,7 @@
    If a company files its accounts online then that account filing is available to download through the companies house accounts data product \cite{accountsdataproduct}. This means that for increasingly many companies detailed financial data is available.
    The files are given as one XML (or HTML) file per account file per company per year. The most effective way to read these files is to recursively see if there is a number between two tags and if there is pull the number, its title and date. The \texttt{data/accounts} folder in the GitHub repository \cite{github} contains useful python scripts to process the accounts data. The following table summarises the available accounts data. The percentages proportion of accounts that contain the heading. There is a high correlation between having one of the heading and having the other. The proportion of filed accounts of active companies to active companies increases from 35\% in 2008 to about 60\% in 2017.
    \begin{center}
-      \begin{tabular}{  l | c | c | c  }
+      \begin{tabular}{  c | c | c | c  }
       Year & Number of Accounts & netcurrentassetsliabilities & currentassets \\
       \hline
       2008 & 185163  & 59\% & 58\% \\
@@ -58,10 +57,9 @@
    \subsubsection{Companies House API}
    The Companies House API \cite{companieshouseapi} can be used to get detailed information about a company given its name or company number. The API has a request limit of 2 requests per second per API key, so to make one query per company for all companies registered since 2012 it would take 32 days. The service does allow multiple API keys to be registered which can speed up data acquisition. The API can be used to get all the filings for a particular company, with the exact dates of each. See the folder \texttt{data/API} in \cite{github} for a script that pulls the changes of address for companies.
    \subsection{Office for National Statistics}
-   The Office for National Statistics releases yearly summery datasets
    \subsubsection{Business Activity, Size and Location}
    \label{basl}
-   The Business Activity, Size and Location tables from the ONS \cite{basl}, available for 2012 to 2017, report by local authority and SIC code the number of companies with size in a particular range. For example, for employment statistics the ONS typically give the number of companies with employees in the ranges \emph{0-4, 5-9, 10-19, 20-49, 50-99, 100-249} and \emph{250+} and will do something similar for turnover.
+   The Business Activity, Size and Location tables from the ONS \cite{basl}, available for 2012 to 2017, report by local authority and SIC code the number of companies with size in a particular range. For example, for employment statistics the ONS typically give the number of companies with employees in the ranges \emph{0-4, 5-9, 10-19, 20-49, 50-99, 100-249} and \emph{250+}. The turnover is treated similarly.
    
    \subsubsection{Postcode Data}
 
@@ -69,12 +67,14 @@
 
    \subsubsection{Employment}
 
-   The ONS also report employment \cite{employment} by location broken down into public and private sector jobs. We assume that all the companies listed on companies house are private entities, and hence any employees are working in the private sector.
+   The ONS also report employment \cite{employment} by location and also by SIC code broken down into public and private sector jobs. We assume that all the companies listed on companies house are private entities, and hence any employees are working in the private sector. The employment is useful as it allows the mean company size to be calculated.
 
    \section{Issues Combining ONS and Companies House data}
 
 
    \subsection{Number of Companies}
+   \label{company_enterprise_error}
+
    \begin{figure}[h]
       \begin{center}
          \caption{Total Number of Companies registered on Companies House and reported by ONS}
@@ -84,7 +84,7 @@
    \end{figure}
    % TODO: Removing repeated addresses for offices
 
-   Looking at figure \ref{ch_vs_ons} it is clear that an ONS enterprise isn't just a companies house company. This is because many enterprises are made up of multiple companies. A way round this is to assume that if two companies have the same set of addresses then they are part of the same enterprise.
+   Looking at figure \ref{ch_vs_ons} it is clear that an ONS enterprise isn't just a companies house company. This is because many enterprises are made up of multiple companies. Because of this issue, for this report we assume that if two companies share the same set of addresses then they are part of the same enterprise. This reduces the error between the companies, but there is still a large difference between the number of companies and enterprises. Due to this issue, we will use proportions in this report rather than actual numbers of companies and enterprises.
 
    \subsection{SIC Codes}
 
@@ -104,38 +104,81 @@
 
    \subsubsection{Simulations}
 
-   In order to test whether the MLE can recover the distribution parameters from the size bins we ran simulations: picking random numbers from a known distribution and then trying to recover the distribution parameters. For these simulations we assume that the number of companies is large enough that the number of companies in each bin is the expected number of companies. The python scripts for these simulations can be found in the \texttt{Lognormal Bias} folder in \cite{github}. Running the script \texttt{analysis.py} gives an interactive version of the 3D graphs in figure \ref{bias}.
+   In order to test whether the MLE can recover the distribution parameters from the size bins we ran simulations: picking random numbers from a known distribution and then trying to recover the distribution parameters. In this section we focus on recovering the employment parameters, so use parameters which generate distributions that fill the ONS company sizes size bins. For these simulations we assume that the number of companies is large enough that the number of companies in each bin is the expected number of companies. The python scripts for these simulations can be found in the \texttt{Lognormal Bias} folder in \cite{github}. Running the script \texttt{analysis.py} gives an interactive version of the 3D graphs in figure \ref{bias}.
 
 
    \begin{figure}[!ht]
       \begin{center}
-         \caption{Simulated Bias}
+         \caption{Simulated Bias. The spikes are due to the binned data being ambiguous - at least two sets of parameters lead to the observed binned distribution.}
          \label{bias}
          \includegraphics[width=\textwidth]{graphs/bias}
       \end{center}
    \end{figure}
-   Figure \ref{bias} shows that the parameter estimation generally works quite well for the values 
-   \subsubsection{Matching Enterprise Employment}
-   \label{enterprise_employment}
-   \section{Assigning Sizes and Turnover to companies}
-   For this section we will focus on the year 2014. The same approach can be used for all the other years in the sample. To assign the size to companies we assume the following:
-   \begin{itemize}
-      \item Companies who do not report their assets have a small number of assets and have 0 or 1 employees.
-      \item If company $a$ has more assets than company $b$ then company $a$ employs more people and company $b$. This could be refined such that this is only true for two companies with the same SIC code, but this adds complexity to the size assignments.
-   \end{itemize}
-
-   We then pull $n$ numbers from the fitted lognormal national distribution of company sizes, where $n$ is the total number of companies, and sort the list. We then sort the companies by asset size and assign company $i$ size $i$.
-   Then plotting the results on a graph in a similar way to \ref{enterprise_employment} we get figure \ref{enterprise_employment_reconstruction}
-
-   \begin{figure}
+   Figure \ref{bias} shows that the parameter estimation generally works quite well for the typical parameters in the observed distributions. In order to test the fit of the fitted parameters, we estimate the parameters from the ONS binned data and then use the distribution parameters to calculate the expected proportion of companies with in each bin and then plot those proportions. Although not the most mathematically rigorous method, this is a quick way to get a clear picture about the parameter estimation.
+   \begin{figure}[!ht]
       \begin{center}
-         \includegraphics[width=10cm]{graphs/national_distribution_employment_reconstuction}
-         \caption{National Employment Reconstruction}
-         \label{enterprise_employment_reconstruction}
+         \caption{Plot to evaluate parameter estimation. 100 points plotted with $(\mu, \sigma) \in [-1, 1] \times [0.5, 3]$. The left plot contains 7 points for each parameter pair, and the right plot is the same data but connecting each set of points up.}
+         \label{parameter_reconstruction}
+         \includegraphics[width=\textwidth]{graphs/loglog_reconstruction}
       \end{center}
    \end{figure}
 
-   \subsection{Results}
+	The results in figure \ref{parameter_reconstruction} show that if the size distribution of companies is approximately log normal then using the available ONS data, it is possible to recover the parameters of the underlying distributions.
+
+   \subsubsection{Matching Enterprise Employment}
+   \label{enterprise_employment}
+   The same procedure can then be applied to the ONS data. Figure \ref{2014_size_dist_results} indicates that although the underlying distribution of enterprise sizes is not lognormal, the fitted distribution does an adequate job of predicting the enterprise sizes.
+
+   \begin{figure}[!ht]
+      \begin{center}
+         \caption{2014 ONS Employment size. Each point represents a size bin of a local authority.}
+         \label{2014_size_dist_results}
+         \includegraphics[width=10cm]{graphs/2014_enterprise_size_by_la}
+      \end{center}
+   \end{figure}
+
+
+   \label{enterprise_employment}
+   \section{Assigning Sizes to Enterprises}
+   For this section we will focus on the year 2014. The same approach can be used for all the other years in the sample. To assign the size to companies we assume the following:
+   \begin{itemize}
+      \item Companies who do not report their assets have assets of 0 value.\footnote{This assumption is made since when processing the data it is difficult to distinguish whether a company did not report assets or is exempt from reporting the data.}
+      \item If company $a$ has more assets than company $b$ and $a$ and $b$ have the same SIC code, then company $a$ employs more people and company $b$.
+   \end{itemize}
+
+
+
+   We then pull $n$ numbers from the fitted lognormal distribution of company sizes for each SIC code, where $n$ is the total number of companies with each SIC Code, and sort the list. We then sort the companies by asset size and assign company $i$ size $i$. Using the same technique as in \ref{enterprise_employment} we then plot the predictions (figure \ref{enterprise_employment_reconstruction_using_sic}).
+  	\begin{figure}
+      \begin{center}
+         \includegraphics[width=10cm]{graphs/2014_la_reconstruction}
+         \caption{Local Authority Employment Reconstruction using SIC code distributions}
+         \label{enterprise_employment_reconstruction_using_sic}
+      \end{center}
+   \end{figure}
+
+
+   \subsection{Evaluating the the assigned sizes}
+
+   One simple test and use for the data set is to try and reproduce the ONS reported private employment rates. To do this we use the sizes generated using the SIC code distributions and add up the enterprise sizes. Due to the issues raised in section \ref{company_enterprise_error}, we test the employment predictions by looking at the ratios of total employment, rather than plotting absolute employment statistics.
+
+  	\begin{figure}
+      \begin{center}
+         \includegraphics[width=9cm]{graphs/employment_prediction_with_london}\includegraphics[width=9cm]{graphs/employment_prediction}
+         \caption{Local Authority Employment Reconstruction using SIC code distributions. The right is a zoomed in version of the left}
+         \label{employment_predictions}
+      \end{center}
+   \end{figure}
+
+
+   We see in figure \ref{employment_predictions} that the employment predictions are reasonable - with a gradient of approximately 1. There is a fair amount of error in the data but this is to be expected, as the prediction assumes that all the workers for a company work in that companies registered office location, which is not true for many jobs. This is seen in the outlier, Westminster, since central London is a common place for large company headquarters with companies such as \emph{Marks and Spencer}\cite{companieshousesnapshots}.
+   
+
+   \section{Improvements}
+
+   To improve this dataset the most important issue to sort out is the issue discussed in section \ref{company_enterprise_error} since this would allow a much finer understanding of how the ONS data relates to the companies house entities. We found that if the assumption that all enterprises with a given SIC code, $s$ have a probability $p_s$ of having an enterprise (set of companies with the same set of addresses) is made then by finding $p_s$ for each $s$ we could improve the predictions. The problem with this approach is that it creates two granular sets of enterprises, the ones from companies house and the set with the correct number of companies, and it is difficult to use the companies house data to then infer the properties of the second set.
+
+   Another important improvement would be to map and assign branches to companies. ONS release data on the number and size of local units in each local authority, so this could be used to assign branches and associated employees to enterprises. Since the technique for assigning employees to enterprises in section \ref{} doesn't use the location of the company, there are no ties for the employees of an enterprise registered in a particular local authority to work there. From the ONS reports, it is not clear how the location of an enterprise is assigned - whether it is the registered office address of the enterprise, or where the company is acting. A clever assignment of branches to the enterprises would allow the size assignations to predict employment accurately and also track the flow of employment around the UK using the companies house migration data.
 
    \medskip
 

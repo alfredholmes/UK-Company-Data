@@ -39,7 +39,10 @@ def main():
 			#predicted_lists[s].append(predicted[la][s]) 	
 
 
-	#plt.loglog()
+	plt.loglog()
+	ax = plt.gca()
+	ax.set_xlim([10**-3.2, 10**0])
+	ax.set_ylim([10**-3.2, 10**0])
 	for s in size_bands:
 
 		plt.scatter(observed_lists[s], predicted_lists[s], label=s)

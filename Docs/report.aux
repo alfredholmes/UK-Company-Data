@@ -40,6 +40,7 @@
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.3}Employment}{2}{subsubsection.2.2.3}}
 \@writefile{toc}{\contentsline {section}{\numberline {3}Issues Combining ONS and Companies House data}{2}{section.3}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Number of Companies}{2}{subsection.3.1}}
+\newlabel{company_enterprise_error}{{3.1}{2}{Number of Companies}{subsection.3.1}{}}
 \citation{github}
 \@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Total Number of Companies registered on Companies House and reported by ONS}}{3}{figure.1}}
 \newlabel{ch_vs_ons}{{1}{3}{Total Number of Companies registered on Companies House and reported by ONS}{figure.1}{}}
@@ -47,19 +48,28 @@
 \@writefile{toc}{\contentsline {section}{\numberline {4}Fitting Lognormal Distributions}{3}{section.4}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1}MLE}{3}{subsection.4.1}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.1}Simulations}{3}{subsubsection.4.1.1}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Simulated Bias. The spikes are due to the binned data being ambiguous - at least two sets of parameters lead to the observed binned distribution.}}{4}{figure.2}}
+\newlabel{bias}{{2}{4}{Simulated Bias. The spikes are due to the binned data being ambiguous - at least two sets of parameters lead to the observed binned distribution}{figure.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Plot to evaluate parameter estimation. 100 points plotted with $(\mu , \sigma ) \in [-1, 1] \times [0.5, 3]$. The left plot contains 7 points for each parameter pair, and the right plot is the same data but connecting each set of points up.}}{4}{figure.3}}
+\newlabel{parameter_reconstruction}{{3}{4}{Plot to evaluate parameter estimation. 100 points plotted with $(\mu , \sigma ) \in [-1, 1] \times [0.5, 3]$. The left plot contains 7 points for each parameter pair, and the right plot is the same data but connecting each set of points up}{figure.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.2}Matching Enterprise Employment}{4}{subsubsection.4.1.2}}
+\newlabel{enterprise_employment}{{4.1.2}{4}{Matching Enterprise Employment}{subsubsection.4.1.2}{}}
+\citation{companieshousesnapshots}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces 2014 ONS Employment size. Each point represents a size bin of a local authority.}}{5}{figure.4}}
+\newlabel{2014_size_dist_results}{{4}{5}{2014 ONS Employment size. Each point represents a size bin of a local authority}{figure.4}{}}
+\newlabel{enterprise_employment}{{4.1.2}{5}{Matching Enterprise Employment}{figure.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Assigning Sizes to Enterprises}{5}{section.5}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Evaluating the the assigned sizes}{5}{subsection.5.1}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Improvements}{5}{section.6}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Local Authority Employment Reconstruction using SIC code distributions}}{6}{figure.5}}
+\newlabel{enterprise_employment_reconstruction_using_sic}{{5}{6}{Local Authority Employment Reconstruction using SIC code distributions}{figure.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Local Authority Employment Reconstruction using SIC code distributions. The right is a zoomed in version of the left}}{6}{figure.6}}
+\newlabel{employment_predictions}{{6}{6}{Local Authority Employment Reconstruction using SIC code distributions. The right is a zoomed in version of the left}{figure.6}{}}
 \bibcite{companieshousesnapshots}{1}
 \bibcite{snapshotarchive}{2}
 \bibcite{accountsdataproduct}{3}
 \bibcite{github}{4}
 \bibcite{companieshouseapi}{5}
 \bibcite{basl}{6}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Simulated Bias}}{4}{figure.2}}
-\newlabel{bias}{{2}{4}{Simulated Bias}{figure.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.2}Matching Enterprise Employment}{4}{subsubsection.4.1.2}}
-\newlabel{enterprise_employment}{{4.1.2}{4}{Matching Enterprise Employment}{subsubsection.4.1.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Assigning Sizes and Turnover to companies}{4}{section.5}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Results}{4}{subsection.5.1}}
 \bibcite{employment}{7}
 \bibcite{postcodes}{8}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces National Employment Reconstruction}}{5}{figure.3}}
-\newlabel{enterprise_employment_reconstruction}{{3}{5}{National Employment Reconstruction}{figure.3}{}}
